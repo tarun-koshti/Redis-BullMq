@@ -1,0 +1,21 @@
+services:
+  redis:
+    image: redis:7-alpine
+    # Turn on the append-only file, so scheduled jobs survive a restart or crash
+    # (the image's default is periodic snapshots only).
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  mongo:
+    image: mongodb/mongodb-community-server:8.0-ubi9
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
+  redis-data:

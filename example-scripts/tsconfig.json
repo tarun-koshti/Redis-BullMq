@@ -1,0 +1,10 @@
+{
+  // Type-checks the example scripts. They live outside src/, so the main build
+  // (npm run build) never compiles them into dist/.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true
+  },
+  "include": ["."]
+}
