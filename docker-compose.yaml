@@ -2,8 +2,9 @@ services:
   redis:
     image: redis:7-alpine
     # Turn on the append-only file, so scheduled jobs survive a restart or crash
-    # (the image's default is periodic snapshots only).
-    command: redis-server --appendonly yes
+    # (the image's default is periodic snapshots only). Cap memory at 256 MB and
+    # never evict keys when it's full, so jobs and schedules are never deleted.
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy noeviction
     ports:
       - "6379:6379"
     volumes:

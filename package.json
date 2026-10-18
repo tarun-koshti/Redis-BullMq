@@ -1,8 +1,8 @@
 {
-  "name": "bullmq-order-reminder",
+  "name": "bullmq-order-app",
   "version": "1.0.0",
   "private": true,
-  "description": "Delayed job + cancel pattern with BullMQ, Express and MongoDB",
+  "description": "Delayed jobs, retries, cancel and cron (Job Schedulers) with BullMQ, Express and MongoDB",
   "type": "commonjs",
   "scripts": {
     "dev": "tsx watch src/index.ts",

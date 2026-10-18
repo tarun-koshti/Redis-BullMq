@@ -1,12 +1,18 @@
 import { Queue } from 'bullmq';
 import { config } from '../config/config';
-import { QUEUE_CONFIG, QueueName, QUEUE_NAMES } from '../constants/appConstants';
+import {
+  QUEUE_CONFIG,
+  QueueName,
+  QUEUE_NAMES,
+  SCHEDULER_CONFIG,
+  SchedulerName,
+} from '../constants/appConstants';
 
 // One Queue instance per queue name, created on demand and reused. Queues live
 // in Redis, so scheduled jobs survive restarts and are shared across instances.
-const queues = new Map<QueueName, Queue>();
+const queues = new Map<QueueName | SchedulerName, Queue>();
 
-function getQueue(name: QueueName): Queue {
+function getQueue(name: QueueName | SchedulerName): Queue {
   let queue = queues.get(name);
   if (!queue) {
     // enableOfflineQueue: false — while Redis is down, adding a job fails
@@ -72,4 +78,37 @@ export async function removeJob(queueName: QueueName, jobId: string) {
   } catch {
     // Job is active/locked; leave it — it will no-op on its status check.
   }
+}
+
+// Jobs of a queue that failed all their tries and are still kept in Redis
+// (see `removeOnFail`).
+export async function getFailedJobs(queueName: QueueName) {
+  return getQueue(queueName).getFailed();
+}
+
+// Create the recurring job, or update it if it already exists. Safe to call on
+// every app start: the scheduler id is the key, so restarts (or several app
+// instances) never create a second schedule. A changed pattern replaces the
+// old one; a changed scheduler id creates a NEW scheduler and leaves the old
+// one running (remove it with queue.removeJobScheduler()).
+export async function upsertScheduler(name: SchedulerName) {
+  const { schedulerId, jobName, pattern, tz, attempts, backoff, removeOnComplete, removeOnFail } =
+    SCHEDULER_CONFIG[name];
+  return getQueue(name).upsertJobScheduler(
+    schedulerId,
+    { pattern, tz },
+    { name: jobName, opts: { attempts, backoff, removeOnComplete, removeOnFail } },
+  );
+}
+
+// The scheduler as stored in Redis, including `next`: its next run time.
+export async function getScheduler(name: SchedulerName) {
+  return getQueue(name).getJobScheduler(SCHEDULER_CONFIG[name].schedulerId);
+}
+
+// Run a scheduled job once, right now, outside its schedule. It goes through
+// the same queue and worker, with the same retry settings.
+export async function runSchedulerNow(name: SchedulerName) {
+  const { jobName, attempts, backoff, removeOnComplete, removeOnFail } = SCHEDULER_CONFIG[name];
+  return getQueue(name).add(jobName, {}, { attempts, backoff, removeOnComplete, removeOnFail });
 }
