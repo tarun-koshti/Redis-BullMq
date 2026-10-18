@@ -9,7 +9,9 @@ article:
    [Beyond Caching: Scheduling Jobs with Redis, Node.js and BullMQ](https://dev.to/tarun_koshti_122/beyond-caching-scheduling-jobs-with-redis-nodejs-and-bullmq-31a5).
 2. **Daily order report (cron)** — a BullMQ Job Scheduler runs every night at
    midnight, aggregates the orders of the last 24 hours, and saves the result in
-   the `analytics` collection. See [Cron: daily order report](#cron-daily-order-report).
+   the `analytics` collection. Article:
+   [Beyond Caching: Cron Jobs with Redis, Node.js and BullMQ](https://dev.to/tarun_koshti_122/beyond-caching-cron-jobs-with-redis-nodejs-and-bullmq-hpd).
+   See also [Cron: daily order report](#cron-daily-order-report).
 
 When an order is created we schedule a delayed reminder. Each reminder, when it
 runs, schedules the next one — until the order is paid or the reminder limit is
